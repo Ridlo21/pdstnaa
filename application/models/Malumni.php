@@ -3,31 +3,58 @@ defined('BASEPATH') or exit('No direct script access allowed');
 
 class Malumni extends CI_Model
 {
-    public function alumni()
+
+    var $table = 'tb_alumni';
+    var $column_search = ['tb_person.niup', 'tb_person.nama', 'tb_person.jenis_kelamin'];
+    var $order = null;
+
+    private function _get_datatables_query()
     {
-        $this->db->join('tb_person', 'tb_person.id_person=tb_alumni.id_person');
-        $this->db->from('tb_alumni');
-        $query = $this->db->get();
-        return $query->result();
+        $this->db->select('
+            tb_alumni.id_alumni,
+            tb_alumni.tgl_berhenti,
+            tb_person.id_person,
+            tb_person.niup,
+            tb_person.nama,
+            tb_person.jenis_kelamin
+        ');
+        $this->db->from($this->table)->order_by('tb_alumni.id_alumni', 'DESC');
+        $this->db->join('tb_person', 'tb_person.id_person = tb_alumni.id_person');
+
+        if (!empty($_POST['search']['value'])) {
+            $this->db->group_start();
+            foreach ($this->column_search as $i => $item) {
+                if ($i === 0) {
+                    $this->db->like($item, $_POST['search']['value']);
+                } else {
+                    $this->db->or_like($item, $_POST['search']['value']);
+                }
+            }
+            $this->db->group_end();
+        }
     }
 
-    public function otomatis_santri()
+    public function get_datatables()
     {
-        $this->db->where('status', 'aktif');
-        $this->db->from('tb_person');
-        $this->db->order_by('nama', 'ASC');
-        $query = $this->db->get();
-        return $query;
+        $this->_get_datatables_query();
+
+        if ($_POST['length'] != -1) {
+            $this->db->limit($_POST['length'], $_POST['start']);
+        }
+
+        return $this->db->get()->result();
     }
 
-    public function edit_santri($id, $data)
+    public function count_filtered()
     {
-        $this->db->update('tb_person', $data, $id);
+        $this->_get_datatables_query();
+        return $this->db->get()->num_rows();
     }
 
-    public function simpan_alumni($data2)
+    public function count_all()
     {
-        return $this->db->insert('tb_alumni', $data2);
+        $this->db->from($this->table);
+        return $this->db->count_all_results();
     }
 
     public function santri_idx($id)
@@ -63,23 +90,41 @@ class Malumni extends CI_Model
         return $query->row();
     }
 
+    public function data_boyong($alumni)
+    {
+
+        $this->db->from('tb_alumni');
+        $this->db->where('id_alumni', $alumni);
+        $query = $this->db->get();
+        return $query->row();
+    }
+
+    public function divisi_by_person($id, $alumni)
+    {
+        $this->db->select('
+        d.divisi,
+        d.penjab,
+        d.id_divisi,
+        a.tgl_berhenti AS tanggal_keluar
+    ');
+        $this->db->from('tb_person p');
+        $this->db->join('tb_alumni a', 'a.id_person = p.id_person', 'left');
+        $this->db->join('tb_history_divisi h', 'h.id_person = p.id_person', 'left');
+        $this->db->join('tb_divisi d', 'd.id_divisi = h.id_divisi', 'left');
+        $this->db->where('p.id_person', $id);
+        $this->db->where('a.id_alumni', $alumni);
+        $this->db->order_by('h.tgl_masuk', 'DESC');
+        $this->db->limit(1);
+
+        return $this->db->get()->row();
+    }
+
     public function data_mahrom($id)
     {
         $this->db->join('tb_mahrom', 'tb_mahrom.id_mahrom=tb_detail_mahrom.id_mahrom');
         $this->db->where('id_person', $id);
         $this->db->order_by('id_detail_mahrom', 'desc');
         $this->db->from('tb_detail_mahrom');
-        $query = $this->db->get();
-        return $query->result();
-    }
-
-    public function data_domisili($id)
-    {
-        $this->db->join('tb_kamar', 'tb_kamar.id_kamar=tb_history.id_kamar');
-        $this->db->join('tb_blok', 'tb_blok.id_blok=tb_kamar.id_blok');
-        $this->db->join('tb_wilayah', 'tb_wilayah.id_wilayah=tb_blok.id_wilayah');
-        $this->db->where('id_person', $id);
-        $this->db->from('tb_history');
         $query = $this->db->get();
         return $query->result();
     }

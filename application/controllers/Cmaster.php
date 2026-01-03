@@ -8,7 +8,7 @@ class Cmaster extends CI_Controller
 	{
 		parent::__construct();
 		if (!$this->session->userdata('login')) {
-			redirect('Clogin');
+			redirect(site_url('log-in'));
 		}
 		$this->load->model('Mmaster');
 	}

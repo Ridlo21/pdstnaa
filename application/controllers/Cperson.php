@@ -339,11 +339,12 @@ class Cperson extends CI_Controller
             'aktif' => 'tidak'
         );
         $this->Mperson->edit_penempatan(array('id_person' => $id), $data);
-        $data2 = array(
-            'status' => 'Tidak Aktif'
+        $data3 = array(
+            'status' => 'Tidak Aktif',
+            'tgl_berhenti' => date('Y-m-d')
         );
 
-        $this->Mperson->edit_history_divisi(array('id_person' => $id), $data2);
+        $this->Mperson->edit_history_divisi(array('id_person' => $id), $data3);
 
         $id_pengurus = $this->db->get_where('tb_pengurus', ['id_person' => $id], ['status' => 'aktif'])->row_array();
         $id_pengajar = $this->db->get_where('tb_guru_nubdah', ['id_person' => $id], ['status_guru_nubdah' => 'aktif'])->row_array();

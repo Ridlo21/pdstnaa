@@ -65,7 +65,7 @@ class Clogin extends CI_Controller
 
         echo json_encode([
             'status'   => 'success',
-            'redirect' => site_url('Cmaster')
+            'redirect' => site_url('admin')
         ]);
     }
 

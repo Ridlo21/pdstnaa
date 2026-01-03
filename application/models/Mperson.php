@@ -54,7 +54,7 @@ class Mperson extends CI_Model
     private function _get_datatables_query()
     {
 
-        $this->db->from($this->table)->where('niup !=',  '')->where('status', 'aktif');
+        $this->db->from($this->table)->where('niup IS NOT NULL')->where('niup !=',  '')->where('status', 'aktif');
 
         $i = 0;
 

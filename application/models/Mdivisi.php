@@ -102,13 +102,20 @@ class Mdivisi extends CI_Model
 		$this->db->or_like('p.niup', $keyword);
 		$this->db->group_end();
 
+		$this->db->where('p.niup IS NOT NULL');
+		$this->db->where('p.niup !=', '');
+
+		// status person aktif
 		$this->db->where('p.status', 'aktif');
 
-		$this->db->where("p.id_person NOT IN (
-        SELECT id_person 
-        FROM tb_history_divisi 
-        WHERE status = 'Aktif'
-    	)", NULL, FALSE);
+		// belum terdaftar di history divisi aktif
+		$this->db->where("
+        p.id_person NOT IN (
+            SELECT id_person
+            FROM tb_history_divisi
+            WHERE status = 'Aktif'
+        )
+    ", NULL, FALSE);
 
 		$query = $this->db->get();
 		return $query->result();
