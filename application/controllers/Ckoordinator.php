@@ -70,9 +70,16 @@ class Ckoordinator extends CI_Controller
             ->where('id_periode', $this->input->post('periode'))
             ->where('status', 'Aktif')
             ->get();
-        if ($id_pengurus_lawas->num_rows() > 0 || $id_guru_lawas->num_rows() > 0 || $id_karyawan_lawas->num_rows() > 0) {
+        $id_karyawan_lawas = $this->db->select('id_person')
+            ->from('tb_karyawan')
+            ->where('status', 'Aktif')
+            ->get();
+        if ($id_pengurus_lawas->num_rows() > 0 || $id_karyawan_lawas->num_rows() > 0) {
             foreach ($id_pengurus_lawas->result_array() as  $e) {
                 $dat[] = $e['id_person'];
+            }
+            foreach ($id_karyawan_lawas->result_array() as  $jj) {
+                $dat[] = $jj['id_person'];
             }
         } else {
             $dat = ['0'];
